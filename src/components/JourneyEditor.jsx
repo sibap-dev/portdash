@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Save, Check, Loader2, Plus, X, Calendar } from 'lucide-react'
+import { Save, Check, Loader2, Plus, X, Calendar, Eye } from 'lucide-react'
 import { useFirestoreDoc } from '../hooks/useFirestoreDoc'
+import { useAuth } from '../contexts/AuthContext'
 
 const DEFAULT_JOURNEY = [
   { icon: 'GraduationCap', year: '2022 - Present', title: 'CSE Student', description: 'Pursuing Computer Science degree at NIST University, building a strong foundation in programming, algorithms, and software engineering.', highlights: ['Data Structures', 'Algorithms', 'Web Development'] },
@@ -71,6 +72,7 @@ export default function JourneyEditor() {
   const { data, loading, saving, save } = useFirestoreDoc('journey')
   const [entries, setEntries] = useState([])
   const [saved, setSaved] = useState(false)
+  const { isAuthorized } = useAuth()
 
   useEffect(() => {
     if (data?.items) setEntries(data.items)
@@ -111,17 +113,22 @@ export default function JourneyEditor() {
         <div>
           <h2 className="text-2xl font-bold font-display text-white">Journey Section</h2>
           <p className="text-sm text-gray-400 mt-1">Edit your timeline entries</p>
+          {!isAuthorized && (
+            <div className="flex items-center gap-1.5 mt-2 text-xs text-yellow-500 bg-yellow-500/10 px-2.5 py-1 rounded-full w-fit">
+              <Eye className="w-3 h-3" /> Read-only view
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-2">
-          <motion.button whileHover={{ scale: 1.02 }} onClick={addEntry}
-            className="flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/10 text-white rounded-xl font-medium text-sm hover:bg-white/10 hover:border-white/20 transition-all">
+          <motion.button whileHover={{ scale: 1.02 }} onClick={addEntry} disabled={!isAuthorized}
+            className="flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/10 text-white rounded-xl font-medium text-sm disabled:opacity-40 hover:bg-white/10 hover:border-white/20 transition-all">
             <Plus className="w-4 h-4" /> Add Entry
           </motion.button>
           <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-            onClick={handleSave} disabled={saving}
+            onClick={handleSave} disabled={!isAuthorized || saving}
             className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#00B4D8] via-[#9B59B6] to-[#FF6B6B] text-white rounded-xl font-medium text-sm disabled:opacity-50 shadow-lg shadow-[#00B4D8]/20 hover:shadow-[#00B4D8]/30 transition-shadow">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-            {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Changes'}
+            {saving ? 'Saving...' : saved ? 'Saved!' : isAuthorized ? 'Save Changes' : 'Viewing (read-only)'}
           </motion.button>
         </div>
       </div>

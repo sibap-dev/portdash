@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Save, Check, Loader2, Upload, Plus, X, Globe, Hash, AtSign, FileText } from 'lucide-react'
+import { Save, Check, Loader2, Upload, Plus, X, Globe, Hash, AtSign, FileText, Eye } from 'lucide-react'
 import { useFirestoreDoc } from '../hooks/useFirestoreDoc'
 import { useFileUpload } from '../hooks/useFileUpload'
+import { useAuth } from '../contexts/AuthContext'
 
 const DEFAULT_HERO = {
   name: 'Siba Prasad Padhi',
@@ -26,6 +27,7 @@ export default function HeroEditor() {
   const { upload: uploadResume, uploading: uploadingResume, progress: progressResume } = useFileUpload()
   const [saved, setSaved] = useState(false)
   const [saveError, setSaveError] = useState(null)
+  const { isAuthorized } = useAuth()
 
   useEffect(() => {
     if (data) setForm({ ...DEFAULT_HERO, ...data })
@@ -69,6 +71,11 @@ export default function HeroEditor() {
         <div>
           <h2 className="text-2xl font-bold font-display text-white">Hero Section</h2>
           <p className="text-sm text-gray-400 mt-1">Edit your hero/banner content</p>
+          {!isAuthorized && (
+            <div className="flex items-center gap-1.5 mt-2 text-xs text-yellow-500 bg-yellow-500/10 px-2.5 py-1 rounded-full w-fit">
+              <Eye className="w-3 h-3" /> Read-only view
+            </div>
+          )}
         </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           {saveError && (
@@ -78,11 +85,11 @@ export default function HeroEditor() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={handleSave}
-            disabled={saving || uploadingImage || uploadingResume}
+            disabled={!isAuthorized || saving || uploadingImage || uploadingResume}
             className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#00B4D8] via-[#9B59B6] to-[#FF6B6B] text-white rounded-xl font-medium text-sm disabled:opacity-50 shadow-lg shadow-[#00B4D8]/20 hover:shadow-[#00B4D8]/30 transition-shadow"
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-            {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Changes'}
+            {saving ? 'Saving...' : saved ? 'Saved!' : isAuthorized ? 'Save Changes' : 'Viewing (read-only)'}
           </motion.button>
         </div>
       </div>

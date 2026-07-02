@@ -13,15 +13,11 @@ export function AuthProvider({ children }) {
 
   const clearError = () => setAuthError(null)
 
+  const isAuthorized = user && user.email === AUTHORIZED_EMAIL
+
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
-      if (u && u.email !== AUTHORIZED_EMAIL) {
-        signOut(auth)
-        setUser(null)
-        setAuthError(`Access restricted to ${AUTHORIZED_EMAIL}`)
-      } else {
-        setUser(u)
-      }
+      setUser(u)
       setLoading(false)
     })
     return unsub
@@ -30,12 +26,7 @@ export function AuthProvider({ children }) {
   const login = async () => {
     setAuthError(null)
     try {
-      const result = await signInWithPopup(auth, googleProvider)
-      if (result.user.email !== AUTHORIZED_EMAIL) {
-        await signOut(auth)
-        setUser(null)
-        setAuthError(`Access restricted to ${AUTHORIZED_EMAIL}`)
-      }
+      await signInWithPopup(auth, googleProvider)
     } catch (err) {
       if (err.code !== 'auth/popup-closed-by-user') {
         setAuthError(err.message)
@@ -46,7 +37,7 @@ export function AuthProvider({ children }) {
   const logout = () => signOut(auth)
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, authError, clearError }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, authError, clearError, isAuthorized }}>
       {children}
     </AuthContext.Provider>
   )
