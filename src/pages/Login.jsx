@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion'
-import { Sparkles } from 'lucide-react'
+import { Sparkles, AlertCircle, X } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
 export default function Login() {
-  const { login } = useAuth()
+  const { login, authError, clearError } = useAuth()
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4 relative overflow-hidden">
@@ -30,6 +30,20 @@ export default function Login() {
           <p className="text-gray-400 text-sm mb-8 leading-relaxed">
             Sign in with your Google account to manage your portfolio content
           </p>
+
+          {authError && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6 p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-start gap-2 text-left"
+            >
+              <AlertCircle className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />
+              <p className="text-xs text-red-300 flex-1">{authError}</p>
+              <button onClick={clearError} className="text-red-400 hover:text-red-300">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </motion.div>
+          )}
 
           <motion.button
             whileHover={{ scale: 1.02, y: -1 }}
