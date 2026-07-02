@@ -25,14 +25,17 @@ export default function HeroEditor() {
   const { upload: uploadImage, uploading: uploadingImage, progress: progressImage } = useFileUpload()
   const { upload: uploadResume, uploading: uploadingResume, progress: progressResume } = useFileUpload()
   const [saved, setSaved] = useState(false)
+  const [saveError, setSaveError] = useState(null)
 
   useEffect(() => {
     if (data) setForm({ ...DEFAULT_HERO, ...data })
   }, [data])
 
   const handleSave = async () => {
+    setSaveError(null)
     const ok = await save(form)
     if (ok) { setSaved(true); setTimeout(() => setSaved(false), 2000) }
+    else setSaveError('Save failed. Image may be too large — try a smaller file.')
   }
 
   const addSocial = () => {
@@ -67,16 +70,21 @@ export default function HeroEditor() {
           <h2 className="text-2xl font-bold font-display text-white">Hero Section</h2>
           <p className="text-sm text-gray-400 mt-1">Edit your hero/banner content</p>
         </div>
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={handleSave}
-          disabled={saving || uploadingImage || uploadingResume}
-          className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#00B4D8] via-[#9B59B6] to-[#FF6B6B] text-white rounded-xl font-medium text-sm disabled:opacity-50 shadow-lg shadow-[#00B4D8]/20 hover:shadow-[#00B4D8]/30 transition-shadow"
-        >
-          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-          {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Changes'}
-        </motion.button>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          {saveError && (
+            <span className="text-xs text-red-400 text-center sm:text-left">{saveError}</span>
+          )}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleSave}
+            disabled={saving || uploadingImage || uploadingResume}
+            className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#00B4D8] via-[#9B59B6] to-[#FF6B6B] text-white rounded-xl font-medium text-sm disabled:opacity-50 shadow-lg shadow-[#00B4D8]/20 hover:shadow-[#00B4D8]/30 transition-shadow"
+          >
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+            {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Changes'}
+          </motion.button>
+        </div>
       </div>
 
       <div className="space-y-6">
