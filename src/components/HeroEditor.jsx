@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Save, Check, Loader2, Upload, Plus, X, Globe, Hash, AtSign, FileText, Eye } from 'lucide-react'
+import { Save, Check, Loader2, Upload, Plus, X, Globe, Hash, AtSign, FileText, Eye, ImageIcon } from 'lucide-react'
 import { useFirestoreDoc } from '../hooks/useFirestoreDoc'
 import { useFileUpload } from '../hooks/useFileUpload'
 import { useAuth } from '../contexts/AuthContext'
@@ -12,6 +12,7 @@ const DEFAULT_HERO = {
   subtitlePrefix: "I'm a ",
   subtitleWords: ['Developer', 'Creative Thinker', 'Problem Solver', 'Innovator', 'Tech Enthusiast'],
   profileImage: '/profile.jpg',
+  gallery: [],
   resumeUrl: '/resume.pdf',
   socialLinks: [
     { platform: 'github', label: 'GitHub', url: 'https://github.com/sibap-dev' },
@@ -27,6 +28,7 @@ export default function HeroEditor() {
   const { upload: uploadResume, uploading: uploadingResume, progress: progressResume } = useFileUpload()
   const [saved, setSaved] = useState(false)
   const [saveError, setSaveError] = useState(null)
+  const [uploadingGallery, setUploadingGallery] = useState(false)
   const { isAuthorized } = useAuth()
 
   useEffect(() => {
@@ -169,6 +171,41 @@ export default function HeroEditor() {
                 placeholder="Or paste image URL..." />
             </div>
           </div>
+        </div>
+
+        <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 sm:p-6">
+          <h3 className="text-sm font-semibold text-gray-300 mb-4 flex items-center gap-2">
+            <ImageIcon className="w-4 h-4 text-[#00B4D8]" /> Gallery Images
+          </h3>
+          <p className="text-xs text-gray-500 mb-4">Additional images for the swipeable gallery in the expanded photo viewer.</p>
+          {form.gallery.length > 0 && (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+              {form.gallery.map((url, i) => (
+                <div key={i} className="relative group aspect-square rounded-xl overflow-hidden border border-white/[0.06] bg-white/[0.02]">
+                  <img src={url} alt="" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <button onClick={() => setForm((f) => ({ ...f, gallery: f.gallery.filter((_, idx) => idx !== i) }))}
+                      className="p-1.5 bg-red-500/80 rounded-full hover:bg-red-500 transition-colors">
+                      <X className="w-4 h-4 text-white" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          <label className="inline-flex cursor-pointer items-center gap-2 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-gray-400 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all">
+            {uploadingGallery ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+            <span>{uploadingGallery ? 'Uploading...' : 'Add Image'}</span>
+            <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+              const file = e.target.files?.[0]
+              if (!file) return
+              setUploadingGallery(true)
+              const url = await uploadImage(file)
+              if (url) setForm((f) => ({ ...f, gallery: [...f.gallery, url] }))
+              setUploadingGallery(false)
+              e.target.value = ''
+            }} />
+          </label>
         </div>
 
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 sm:p-6">
