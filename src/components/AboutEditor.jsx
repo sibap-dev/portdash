@@ -14,9 +14,9 @@ const DEFAULT_ABOUT = {
     { label: 'Lines of Code', value: 99, suffix: 'K+' },
   ],
   features: [
-    { title: 'AI & Machine Learning Workshop', subtitle: 'IIT Bhubaneswar', description: '2-day intensive workshop on AI and Machine Learning with Data Science, exploring cutting-edge technologies and applications.', link: '' },
-    { title: 'Advanced Programming Internship', subtitle: 'NIST University', description: 'Specialized training in Advanced Programming and Competitive Coding, enhancing problem-solving and algorithmic thinking skills.', link: '' },
-    { title: 'Python Developer Intern', subtitle: 'Asirudh Software Private Limited', description: 'Professional development experience in Python programming, working on real-world projects and industry-standard practices.', link: '' },
+    { title: 'AI & Machine Learning Workshop', subtitle: 'IIT Bhubaneswar', description: '2-day intensive workshop on AI and Machine Learning with Data Science, exploring cutting-edge technologies and applications.', link: '', priority: 1 },
+    { title: 'Advanced Programming Internship', subtitle: 'NIST University', description: 'Specialized training in Advanced Programming and Competitive Coding, enhancing problem-solving and algorithmic thinking skills.', link: '', priority: 2 },
+    { title: 'Python Developer Intern', subtitle: 'Asirudh Software Private Limited', description: 'Professional development experience in Python programming, working on real-world projects and industry-standard practices.', link: '', priority: 3 },
   ],
 }
 
@@ -54,7 +54,7 @@ export default function AboutEditor() {
     })
   }
 
-  const addFeature = () => setForm((f) => ({ ...f, features: [...f.features, { title: '', subtitle: '', description: '', link: '' }] }))
+  const addFeature = () => setForm((f) => ({ ...f, features: [...f.features, { title: '', subtitle: '', description: '', link: '', priority: f.features.length + 1 }] }))
   const removeFeature = (i) => setForm((f) => ({ ...f, features: f.features.filter((_, idx) => idx !== i) }))
 
   if (loading) return (
@@ -161,8 +161,15 @@ export default function AboutEditor() {
                     className="w-full px-4 py-2 bg-white/[0.05] border border-white/10 rounded-xl text-white text-sm focus:border-[#00B4D8] focus:outline-none focus:ring-1 focus:ring-[#00B4D8]/30 transition-all" />
                   <textarea rows={2} value={feat.description} onChange={(e) => updateFeature(i, 'description', e.target.value)} placeholder="Description"
                     className="w-full px-4 py-2 bg-white/[0.05] border border-white/10 rounded-xl text-white text-sm focus:border-[#00B4D8] focus:outline-none focus:ring-1 focus:ring-[#00B4D8]/30 transition-all resize-none" />
-                  <input value={feat.link || ''} onChange={(e) => updateFeature(i, 'link', e.target.value)} placeholder="Certificate URL (optional)"
-                    className="w-full px-4 py-2 bg-white/[0.05] border border-white/10 rounded-xl text-white text-sm focus:border-[#00B4D8] focus:outline-none focus:ring-1 focus:ring-[#00B4D8]/30 transition-all" />
+                  <div className="flex items-center gap-2">
+                    <input value={feat.link || ''} onChange={(e) => updateFeature(i, 'link', e.target.value)} placeholder="Certificate URL (optional)"
+                      className="flex-1 px-4 py-2 bg-white/[0.05] border border-white/10 rounded-xl text-white text-sm focus:border-[#00B4D8] focus:outline-none focus:ring-1 focus:ring-[#00B4D8]/30 transition-all" />
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <label className="text-xs text-gray-500">Priority</label>
+                      <input type="number" min="1" value={feat.priority || i + 1} onChange={(e) => updateFeature(i, 'priority', parseInt(e.target.value) || 1)}
+                        className="w-16 px-3 py-2 bg-white/[0.05] border border-white/10 rounded-xl text-white text-sm focus:border-[#00B4D8] focus:outline-none focus:ring-1 focus:ring-[#00B4D8]/30 transition-all text-center" />
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}

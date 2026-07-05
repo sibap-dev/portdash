@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Save, Check, Loader2, Upload, Plus, X, Globe, Hash, AtSign, FileText, Eye, ImageIcon } from 'lucide-react'
+import { Save, Check, Loader2, Upload, Plus, X, Globe, Hash, AtSign, FileText, Eye, ImageIcon, ArrowUp, ArrowDown } from 'lucide-react'
 import { useFirestoreDoc } from '../hooks/useFirestoreDoc'
 import { useFileUpload } from '../hooks/useFileUpload'
 import { useAuth } from '../contexts/AuthContext'
@@ -29,7 +29,18 @@ export default function HeroEditor() {
   const [saved, setSaved] = useState(false)
   const [saveError, setSaveError] = useState(null)
   const [uploadingGallery, setUploadingGallery] = useState(false)
+  const [dragIndex, setDragIndex] = useState(null)
   const { isAuthorized } = useAuth()
+
+  const moveGallery = (from, to) => {
+    if (to < 0 || to >= form.gallery.length) return
+    setForm((f) => {
+      const items = [...f.gallery]
+      const [moved] = items.splice(from, 1)
+      items.splice(to, 0, moved)
+      return { ...f, gallery: items }
+    })
+  }
 
   useEffect(() => {
     if (data) setForm({ ...DEFAULT_HERO, ...data })
@@ -179,14 +190,33 @@ export default function HeroEditor() {
           </h3>
           <p className="text-xs text-gray-500 mb-4">Additional images for the swipeable gallery in the expanded photo viewer.</p>
           {form.gallery.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+            <div className="space-y-2 mb-4">
               {form.gallery.map((url, i) => (
-                <div key={i} className="relative group aspect-square rounded-xl overflow-hidden border border-white/[0.06] bg-white/[0.02]">
-                  <img src={url} alt="" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <div
+                  key={i}
+                  draggable
+                  onDragStart={() => setDragIndex(i)}
+                  onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move' }}
+                  onDrop={(e) => { e.preventDefault(); if (dragIndex !== null && dragIndex !== i) moveGallery(dragIndex, i); setDragIndex(null) }}
+                  onDragEnd={() => setDragIndex(null)}
+                  className={`flex items-center gap-3 p-2 rounded-xl border transition-all ${
+                    dragIndex === i ? 'opacity-40 border-white/20' : 'border-white/[0.06] hover:border-white/[0.15]'
+                  } bg-white/[0.02]`}
+                >
+                  <img src={url} alt="" className="w-14 h-10 rounded-lg object-cover border border-white/10 shrink-0" />
+                  <span className="text-xs text-gray-500 flex-1 truncate">Image {i + 1}</span>
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => moveGallery(i, i - 1)} disabled={i === 0}
+                      className="p-1.5 text-gray-500 hover:text-white hover:bg-white/10 rounded-lg transition-all disabled:opacity-20 disabled:cursor-not-allowed">
+                      <ArrowUp size={14} />
+                    </button>
+                    <button onClick={() => moveGallery(i, i + 1)} disabled={i === form.gallery.length - 1}
+                      className="p-1.5 text-gray-500 hover:text-white hover:bg-white/10 rounded-lg transition-all disabled:opacity-20 disabled:cursor-not-allowed">
+                      <ArrowDown size={14} />
+                    </button>
                     <button onClick={() => setForm((f) => ({ ...f, gallery: f.gallery.filter((_, idx) => idx !== i) }))}
-                      className="p-1.5 bg-red-500/80 rounded-full hover:bg-red-500 transition-colors">
-                      <X className="w-4 h-4 text-white" />
+                      className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all ml-1">
+                      <X className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
